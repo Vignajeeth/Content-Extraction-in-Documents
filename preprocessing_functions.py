@@ -27,22 +27,25 @@ def annotation_file_to_ref_cit_text(file_name):
                     citation_text = re.search('Citation Text:(.+?)Reference Offset:', text).group(1)
                 except AttributeError:
                     citation_text=''
+                citation_text=re.sub(r'<(.+?)>','',citation_text)
                 try:
                     reference_text = re.search('Reference Text:(.+?)Discourse Facet:', text).group(1)
                 except AttributeError:
                     reference_text=''
+                reference_text=re.sub(r'<(.+?)>','',reference_text)                
                 try:
                     reference_art = re.search('Reference Article:(.+?)Citing Article:', text).group(1)
                 except AttributeError:
                     reference_art=''
-                sample=[text[15:18],reference_art,citation_text,reference_text]
-                dataset.append(sample)    
+                sample=[text[15:18].strip(),reference_art.strip(),citation_text.strip(),reference_text.strip()]
+                if not (len(sample[2])<5 or len(sample[3])<5):
+                    dataset.append(sample)    
     return dataset
 
 
 
-def xml_to_string(file_name):
-    tree = ET.parse(file_name)
+def xml_to_string(file_path,file_name,reference_paper_sentences):
+    tree = ET.parse(file_path)
     xml_data = tree.getroot()
     xmlstr = ET.tostring(xml_data, encoding='unicode', method='xml')
     #Removing Tags
@@ -55,7 +58,8 @@ def xml_to_string(file_name):
     xmlstr=re.sub(r'\n\n',r'\n',xmlstr)
     xmlstr=re.sub(r'\n\n',r'\n',xmlstr)
     document=xmlstr.split('\n')
-    return (random.sample(document,4))
+    reference_paper_sentences[file_name]=document
+    
 
 
 
