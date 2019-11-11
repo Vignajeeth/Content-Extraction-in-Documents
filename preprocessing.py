@@ -56,12 +56,23 @@ for subdir, dirs, files in os.walk(auto_dataset_path):
 
 #Fix the bugs in the human dataset
 
+'''
+import pickle
 
 
+fp = open("human_true_pairs.pkl","wb")
+pickle.dump(human_dataset_true_pairs, fp)
 
+fp = open("human_sentences.pkl","wb")
+pickle.dump(human_reference_paper_sentences, fp)
 
+fp = open("auto_true_pairs.pkl","wb")
+pickle.dump(auto_dataset, fp)
 
+fp = open("auto_sentences.pkl","wb")
+pickle.dump(auto_reference_paper_sentences, fp)
 
+'''
 
 
 
