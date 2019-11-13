@@ -35,6 +35,7 @@ def annotation_file_to_ref_cit_text(file_name):
                 reference_text=re.sub(r'<(.+?)>','',reference_text)                
                 try:
                     reference_art = re.search('Reference Article:(.+?)Citing Article:', text).group(1)
+                    reference_art = re.search('[A-Z]\d{2}-\d{4}',reference_art).group(0)
                 except AttributeError:
                     reference_art=''
                 sample=[text[15:18].strip(),reference_art.strip(),citation_text.strip(),reference_text.strip()]
@@ -61,9 +62,19 @@ def xml_to_string(file_path,file_name,reference_paper_sentences):
     reference_paper_sentences[file_name]=document
     
 
-
-
-
+def pick_sentence(file_name,reference_paper_sentences):
+    '''
+    temp=random.choice(reference_paper_sentences[file_name])
+    if len(temp)>100:
+        return temp
+    temp=pick_sentence(file_name,reference_paper_sentences)
+    return temp
+    '''
+    temp,i='',0
+    while (len(temp)<100) and (i<50):
+        temp=random.choice(reference_paper_sentences[file_name])
+        i+=1
+    return temp
 
 
 
