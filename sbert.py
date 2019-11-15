@@ -1,14 +1,50 @@
-# # -*- coding: utf-8 -*-
-# """
-# Created on Sat Nov  9 22:07:48 2019
+#  -*- coding: utf-8 -*-
+ """
+ Created on Sat Nov  9 22:07:48 2019
 
-# @author: vignajeeth
-# """
+ @author: vignajeeth
+ """
+
+from sentence_transformers import SentenceTransformer
+import pickle
+
+
+fp = open("human_citation_text.pkl","rb")
+human_citation_text=pickle.load(fp)
+
+fp = open("human_reference_text.pkl","rb")
+human_reference_text=pickle.load(fp)
+
+fp = open("human_random_reference_text.pkl","rb")
+human_random_reference_text=pickle.load(fp)
+
+
+
+
+embedder = SentenceTransformer('bert-base-nli-max-tokens')
+
+human_citation_embeddings = embedder.encode(human_citation_text)
+human_reference_embeddings = embedder.encode(human_reference_text)
+human_random_reference_embeddings = embedder.encode(human_random_reference_text)
+
+
+
+#To dump it into pickle if need be
+
+fp = open("human_citation_embeddings.pkl","wb")
+pickle.dump(human_citation_embeddings, fp)
+
+fp = open("human_reference_embeddings.pkl","wb")
+pickle.dump(human_reference_embeddings, fp)
+
+fp = open("human_random_reference_embeddings.pkl","wb")
+pickle.dump(human_random_reference_embeddings, fp)
+
 
 
 
 # # import pickle
-# from sentence_transformers import SentenceTransformer
+
 # import scipy
 # import scipy.cluster
 
