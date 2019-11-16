@@ -53,7 +53,7 @@ def xml_to_string(file_path,file_name,reference_paper_sentences):
     xmlstr=re.sub(r'<(.+?)>','',xmlstr)
     #Removing tabs
     xmlstr=re.sub(r'\t','',xmlstr)
-    #Removing strings with less than 30 characters
+    #Removing strings with less than 50 characters
     xmlstr=re.sub(r'\n.{1,50}\n', '', xmlstr)
     #Removing double lines
     xmlstr=re.sub(r'\n\n',r'\n',xmlstr)

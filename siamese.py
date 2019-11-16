@@ -16,55 +16,57 @@ import numpy as np
 from sklearn.utils import shuffle
 
 
+# Change stuff so that you match it with the dict
+
+name = input ("Enter the name of the data : ")
+
+fp = open(name+"_embeddings_ANP.pkl","rb")
+embeddings_ANP=pickle.load(fp)
+
+embeddings_ANP[name+'_citation_embeddings']=np.asarray(embeddings_ANP[name+'_citation_embeddings'])
+embeddings_ANP[name+'_reference_embeddings']=np.asarray(embeddings_ANP[name+'_reference_embeddings'])
+embeddings_ANP[name+'_random_reference_embeddings']=np.asarray(embeddings_ANP[name+'_random_reference_embeddings'])
 
 
-fp = open("human_citation_embeddings.pkl","rb")
-human_citation_embeddings=pickle.load(fp)
+# human_citation_embeddings=np.asarray(human_citation_embeddings)#.reshape(len(human_citation_embeddings),1,len(human_citation_embeddings[0]))
+# human_reference_embeddings=np.asarray(human_reference_embeddings)#.reshape(len(human_reference_embeddings),1,len(human_reference_embeddings[0]))
+# human_random_reference_embeddings=np.asarray(human_random_reference_embeddings)#.reshape(len(human_random_reference_embeddings),1,len(human_random_reference_embeddings[0]))
 
-fp = open("human_reference_embeddings.pkl","rb")
-human_reference_embeddings=pickle.load(fp)
+h,w=embeddings_ANP[name+'_citation_embeddings'].shape[0],embeddings_ANP[name+'_citation_embeddings'].shape[1]
 
-fp = open("human_random_reference_embeddings.pkl","rb")
-human_random_reference_embeddings=pickle.load(fp)
-
-
-human_citation_embeddings=np.asarray(human_citation_embeddings)#.reshape(len(human_citation_embeddings),1,len(human_citation_embeddings[0]))
-human_reference_embeddings=np.asarray(human_reference_embeddings)#.reshape(len(human_reference_embeddings),1,len(human_reference_embeddings[0]))
-human_random_reference_embeddings=np.asarray(human_random_reference_embeddings)#.reshape(len(human_random_reference_embeddings),1,len(human_random_reference_embeddings[0]))
-
-targets=[np.zeros((human_citation_embeddings.shape[0])),np.ones((human_citation_embeddings.shape[0]))]
+targets=[np.zeros((h)),np.ones((h))]
 #
 #true_pairs=np.concatenate((human_citation_embeddings,human_reference_embeddings),axis=1)
 #false_pairs=np.concatenate((human_citation_embeddings,human_random_reference_embeddings),axis=1)
 
 #dataset_1_to_1=np.concatenate((true_pairs,false_pairs),axis=)
 
-true_pairs=np.asarray([human_citation_embeddings,human_reference_embeddings])
-false_pairs=np.asarray([human_citation_embeddings,human_random_reference_embeddings])
+true_pairs=np.asarray([embeddings_ANP[name+'_citation_embeddings'],embeddings_ANP[name+'_reference_embeddings']])
+false_pairs=np.asarray([embeddings_ANP[name+'_citation_embeddings'],embeddings_ANP[name+'_random_reference_embeddings']])
 
-dataset_1to1=np.concatenate((true_pairs,false_pairs),axis=1).reshape(1328,2,768)
-targets=np.concatenate((np.zeros((human_citation_embeddings.shape[0])),np.ones((human_citation_embeddings.shape[0])))).reshape((1328,1))
+dataset_1to1=np.concatenate((true_pairs,false_pairs),axis=1).reshape(2*h,2,w)
+targets=np.concatenate((np.zeros((h)),np.ones((h)))).reshape((2*h,1))
 
 dataset_1to1, targets = shuffle(dataset_1to1, targets)
-dataset_1to1=dataset_1to1.reshape((2,1328,768))
+dataset_1to1 = dataset_1to1.reshape((2,2*h,w))
 
 #--------------------------Siamese Model-----------------------------
 
 
 
-left_input = Input((768,))
-right_input = Input((768,))
+left_input = Input((w,))
+right_input = Input((w,))
 
-convnet = Sequential([
-    Dense(400,activation='relu',input_shape=(768,)),
+densenet = Sequential([
+    Dense(400,activation='relu',input_shape=(w,)),
     Dense(100,activation='relu'),
     Dense(75,activation='relu'),
     Dense(35,activation='relu'),
 ])
 
 
-encoded_l = convnet(left_input)
-encoded_r = convnet(right_input)
+encoded_l = densenet(left_input)
+encoded_r = densenet(right_input)
 
 L1_layer = Lambda(lambda tensor:K.abs(tensor[0] - tensor[1]))
 
@@ -80,14 +82,10 @@ siamese_net.fit([dataset_1to1[0],dataset_1to1[1]], targets,epochs=30)
 
 
 
-from sklearn.utils import shuffle
-import numpy as np
+# from sklearn.utils import shuffle
+# import numpy as np
 
+# vals=np.asarray([[1,1],[2,2],[3,3],[4,4]])
+# tar=np.asarray([10,20,30,40])
 
-
-
-
-vals=np.asarray([[1,1],[2,2],[3,3],[4,4]])
-tar=np.asarray([10,20,30,40])
-
-vals, tar = shuffle(vals, tar)
+# vals, tar = shuffle(vals, tar)

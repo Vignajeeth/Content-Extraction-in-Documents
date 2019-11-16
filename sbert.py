@@ -1,44 +1,49 @@
-#  -*- coding: utf-8 -*-
- """
- Created on Sat Nov  9 22:07:48 2019
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Nov  9 22:07:48 2019
 
- @author: vignajeeth
- """
+@author: vignajeeth
+"""
+
 
 from sentence_transformers import SentenceTransformer
 import pickle
 
-
-fp = open("human_citation_text.pkl","rb")
-human_citation_text=pickle.load(fp)
-
-fp = open("human_reference_text.pkl","rb")
-human_reference_text=pickle.load(fp)
-
-fp = open("human_random_reference_text.pkl","rb")
-human_random_reference_text=pickle.load(fp)
-
-
-
-
-embedder = SentenceTransformer('bert-base-nli-max-tokens')
-
-human_citation_embeddings = embedder.encode(human_citation_text)
-human_reference_embeddings = embedder.encode(human_reference_text)
-human_random_reference_embeddings = embedder.encode(human_random_reference_text)
+def encoding_text_to_float(name):
+    fp = open(name+"_ANP.pkl","rb")
+    data_ANP=pickle.load(fp)
+    
+    embedder = SentenceTransformer('bert-base-nli-max-tokens')
+    
+    embeddings_ANP={}
+    
+    embeddings_ANP[name+"_citation_embeddings"]=embedder.encode(data_ANP[name+"_citation_text"])
+    embeddings_ANP[name+"_reference_embeddings"]=embedder.encode(data_ANP[name+"_reference_text"])
+    embeddings_ANP[name+"_random_reference_embeddings"]=embedder.encode(data_ANP[name+"_random_reference_text"])
+    
+    #To dump it into pickle if need be
+    
+    fp=open(name+"_embeddings_ANP.pkl","wb")
+    pickle.dump(embeddings_ANP,fp)
 
 
 
-#To dump it into pickle if need be
+name = input ("Enter the name of the data : ")
+encoding_text_to_float(name)
 
-fp = open("human_citation_embeddings.pkl","wb")
-pickle.dump(human_citation_embeddings, fp)
 
-fp = open("human_reference_embeddings.pkl","wb")
-pickle.dump(human_reference_embeddings, fp)
 
-fp = open("human_random_reference_embeddings.pkl","wb")
-pickle.dump(human_random_reference_embeddings, fp)
+
+
+#
+#fp = open("human_citation_embeddings.pkl","wb")
+#pickle.dump(human_citation_embeddings, fp)
+#
+#fp = open("human_reference_embeddings.pkl","wb")
+#pickle.dump(human_reference_embeddings, fp)
+#
+#fp = open("human_random_reference_embeddings.pkl","wb")
+#pickle.dump(human_random_reference_embeddings, fp)
 
 
 
