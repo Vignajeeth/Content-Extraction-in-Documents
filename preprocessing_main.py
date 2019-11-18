@@ -13,8 +13,12 @@ human_dataset_path = '/home/vignajeeth/python/Research/IP/Task1/From-Training-Se
 general(human_dataset_path, 'human')
 
 
-auto_dataset_path = '/home/vignajeeth/python/Research/IP/Task1/From-ScisummNet-2019'
-general(auto_dataset_path, 'auto')
+# auto_dataset_path = '/home/vignajeeth/python/Research/IP/Task1/From-ScisummNet-2019'
+# general(auto_dataset_path, 'auto')
+
+
+test_17_path = '/media/vignajeeth/All Files/Dataset/BIRNDL/scisumm-corpus-master/data/Test-Set-2017'
+general(test_17_path, 'test_17')
 
 
 # TODO
