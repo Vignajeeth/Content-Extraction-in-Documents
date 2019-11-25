@@ -11,41 +11,47 @@ from keras.models import Model, Sequential
 # from keras.regularizers import l2
 from keras import backend as K
 from keras.optimizers import Adam
+
 import pickle
 import numpy as np
 from sklearn.utils import shuffle
+import os
+
+
+def reshaper(matrix):
+    '''
+    Alternative to np.reshape
+    '''
+    dim = matrix.shape[0]
+    h = matrix.shape[1]
+    w = matrix.shape[2]
+    ans = np.ones((h, dim, w))
+    for i in range(h):
+        for j in range(dim):
+            ans[i][j] = matrix[j][i]
+    return (ans)
 
 
 def data_processing_for_siamese(name):
+    os.chdir('Pickles')
     fp = open(name + "_embeddings_ANP.pkl", "rb")
     embeddings_ANP = pickle.load(fp)
+    os.chdir('..')
 
     embeddings_ANP[name + '_citation_embeddings'] = np.asarray(embeddings_ANP[name + '_citation_embeddings'])
     embeddings_ANP[name + '_reference_embeddings'] = np.asarray(embeddings_ANP[name + '_reference_embeddings'])
     embeddings_ANP[name + '_random_reference_embeddings'] = np.asarray(embeddings_ANP[name + '_random_reference_embeddings'])
 
-    # human_citation_embeddings=np.asarray(human_citation_embeddings)#.reshape(len(human_citation_embeddings),1,len(human_citation_embeddings[0]))
-    # human_reference_embeddings=np.asarray(human_reference_embeddings)#.reshape(len(human_reference_embeddings),1,len(human_reference_embeddings[0]))
-    # human_random_reference_embeddings=np.asarray(human_random_reference_embeddings)#.reshape(len(human_random_reference_embeddings),1,len(human_random_reference_embeddings[0]))
-
     h, w = embeddings_ANP[name + '_citation_embeddings'].shape[0], embeddings_ANP[name + '_citation_embeddings'].shape[1]
-
-    targets = [np.zeros((h)), np.ones((h))]
-    #
-    # true_pairs=np.concatenate((human_citation_embeddings,human_reference_embeddings),axis=1)
-    # false_pairs=np.concatenate((human_citation_embeddings,human_random_reference_embeddings),axis=1)
-
-    # dataset_1_to_1=np.concatenate((true_pairs,false_pairs),axis=)
 
     true_pairs = np.asarray([embeddings_ANP[name + '_citation_embeddings'], embeddings_ANP[name + '_reference_embeddings']])
     false_pairs = np.asarray([embeddings_ANP[name + '_citation_embeddings'], embeddings_ANP[name + '_random_reference_embeddings']])
 
-    dataset_1to1 = np.concatenate((true_pairs, false_pairs), axis=1).reshape(2 * h, 2, w)
+    data11 = np.concatenate((true_pairs, false_pairs), axis=1)
     targets = np.concatenate((np.zeros((h)), np.ones((h)))).reshape((2 * h, 1))
+    data11 = reshaper(data11)
 
-    dataset_1to1, targets = shuffle(dataset_1to1, targets)
-    dataset_1to1 = dataset_1to1.reshape((2, 2 * h, w))
-    return (dataset_1to1, targets)
+    return (data11, targets)
 
 # --------------------------Siamese Model Training-----------------------------
 
@@ -56,9 +62,9 @@ def model_definition():
 
     densenet = Sequential([
         Dense(400, activation='relu', input_shape=(w,)),
-        Dense(100, activation='relu'),
+        # Dense(100, activation='relu'),
         Dense(75, activation='relu'),
-        Dense(35, activation='relu'),
+        # Dense(35, activation='relu'),
     ])
 
     encoded_l = densenet(left_input)
@@ -75,14 +81,63 @@ def model_definition():
 
 
 # Training Data
-name = input("Enter the name of the data : ")
-dataset_1to1, targets = data_processing_for_siamese('human')
-w = dataset_1to1.shape[2]
+name = 'human'
+data11, targets = data_processing_for_siamese(name)
 
+#data11, targets = shuffle(data11, targets)
+
+
+w = data11.shape[2]
 # Training of the model
 siamese_net = model_definition()
-siamese_net.fit([dataset_1to1[0], dataset_1to1[1]], targets, epochs=5)
+siamese_net.fit([data11[:, 0], data11[:, 1]], targets, epochs=15)
 
 # Testing
-test_dataset_1to1, test_targets = data_processing_for_siamese('test_17')
-siamese_net.evaluate([test_dataset_1to1[0], test_dataset_1to1[1]], test_targets)
+test_data11, test_targets = data_processing_for_siamese('test_17')
+siamese_net.evaluate([test_data11[:, 0], test_data11[:, 1]], test_targets)
+
+
+#------------------------------------------------------------------
+
+
+'''
+
+# Check zeros
+# Check indexes
+# Run on other datasets
+
+
+
+from scipy.spatial import distance
+import matplotlib.pyplot as plt
+
+
+l2=np.ones((1328))*5
+cos=np.ones((1328))*5
+corr=np.ones((1328))*5
+
+for i in range(1328):
+    l2[i] = distance.euclidean(data11[i][0], data11[i][1])
+    cos[i] = distance.cosine(data11[i][0], data11[i][1])
+    corr[i] = distance.correlation(data11[i][0], data11[i][1])
+#    l2[i+664] = distance.euclidean(false_pairs[0][i], false_pairs[1][i])
+#    cos[i+664] = distance.cosine(false_pairs[0][i], false_pairs[1][i])
+#    corr[i+664] = distance.correlation(false_pairs[0][i], false_pairs[1][i])
+
+
+#for i in range(664):
+#    l2[i] = distance.euclidean(distance.euclidean(true_pairs[1][i], false_pairs[0][i]),distance.euclidean(true_pairs[1][i], true_pairs[0][i]))
+#    cos[i] = distance.cosine(true_pairs[1][i], false_pairs[0][i])
+#    corr[i] = distance.correlation(true_pairs[1][i], false_pairs[0][i])
+
+
+
+
+plt.plot(l2/max(l2),label='Euclidean Distance')
+plt.plot(cos,label='Cosine Distance')
+
+plt.plot(corr,label='Correlation')
+plt.plot(targets,label='True values')
+
+
+'''
